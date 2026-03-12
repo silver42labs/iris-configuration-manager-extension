@@ -2,16 +2,32 @@
  * API layer — fetches migration export data from a server and provides
  * Atelier API helpers for backend bootstrapping.
  *
- * All requests use credentials: "include" (user is already authenticated).
+ * All requests include credentials: "include" and optionally a Basic Auth
+ * header when an auth object { username, password } is supplied.
  */
 
 import { browser } from './platform/browser-polyfill.js';
 
-const EXPORT_PATH = '/api/v1/migration/framework/export';
+const EXPORT_PATH = '/api/v1/configuration-manager/export';
 const ATELIER_BASE = '/api/atelier/v1/%25SYS';
 
 const CLASS_NAME = 'Migration.Framework';
 const CLASS_FILE = 'Migration.Framework.cls';
+
+/**
+ * Build request headers, optionally adding a Basic Auth Authorization header.
+ * @param {{ username: string, password: string }} [auth]
+ * @param {Record<string, string>} [extra]
+ * @returns {Record<string, string>}
+ */
+function buildHeaders(auth, extra = {}) {
+    const headers = { ...extra };
+    if (auth) {
+        headers['Authorization'] =
+            `Basic ${btoa(`${auth.username}:${auth.password}`)}`;
+    }
+    return headers;
+}
 
 /**
  * Load the .cls file bundled with the extension and return its content
@@ -38,17 +54,23 @@ async function loadClassSource() {
 /* ================================================================== */
 
 /**
- * Fetch the migration framework export JSON from a server.
+ * Fetch the configuration manager export JSON from a server.
  * @param {string} baseUrl - Origin URL (protocol + hostname + port).
+ * @param {{ username: string, password: string }} [auth] - Optional Basic Auth credentials.
  * @returns {Promise<object>} Parsed JSON export data.
  */
-export async function fetchExport(baseUrl) {
+export async function fetchExport(baseUrl, auth) {
     const url = `${baseUrl}${EXPORT_PATH}`;
 
-    const response = await fetch(url, { credentials: 'include' });
+    const response = await fetch(url, {
+        credentials: 'include',
+        headers: buildHeaders(auth)
+    });
 
     if (!response.ok) {
-        throw new Error(`Server responded with ${response.status} ${response.statusText}`);
+        const err = new Error(`Server responded with ${response.status} ${response.statusText}`);
+        if (response.status === 401) err.authFailed = true;
+        throw err;
     }
 
     const contentType = response.headers.get('content-type') || '';
@@ -64,12 +86,14 @@ export async function fetchExport(baseUrl) {
  * Returns { ok, status } so the caller can decide what to do.
  *
  * @param {string} baseUrl
+ * @param {{ username: string, password: string }} [auth] - Optional Basic Auth credentials.
  * @returns {Promise<{ ok: boolean, status: number }>}
  */
-export async function tryFetchExport(baseUrl) {
+export async function tryFetchExport(baseUrl, auth) {
     try {
         const response = await fetch(`${baseUrl}${EXPORT_PATH}`, {
-            credentials: 'include'
+            credentials: 'include',
+            headers: buildHeaders(auth)
         });
         return { ok: response.ok, status: response.status };
     } catch {
@@ -88,12 +112,16 @@ export async function tryFetchExport(baseUrl) {
  * overwriting an existing class (avoids 409 Conflict).
  *
  * @param {string} baseUrl
+ * @param {{ username: string, password: string }} [auth]
  * @returns {Promise<string|null>} Document timestamp, or null if not found.
  */
-async function getDocTimestamp(baseUrl) {
+async function getDocTimestamp(baseUrl, auth) {
     const url = `${baseUrl}${ATELIER_BASE}/doc/${CLASS_NAME}.cls`;
 
-    const response = await fetch(url, { credentials: 'include' });
+    const response = await fetch(url, {
+        credentials: 'include',
+        headers: buildHeaders(auth)
+    });
 
     if (response.status === 404) {
         return null; // document does not exist yet
@@ -117,8 +145,9 @@ async function getDocTimestamp(baseUrl) {
  * sent as an If-None-Match header so the server accepts the overwrite.
  *
  * @param {string} baseUrl
+ * @param {{ username: string, password: string }} [auth]
  */
-export async function uploadClass(baseUrl) {
+export async function uploadClass(baseUrl, auth) {
     const url = `${baseUrl}${ATELIER_BASE}/doc/${CLASS_NAME}.cls`;
     const content = await loadClassSource();
 
@@ -127,19 +156,19 @@ export async function uploadClass(baseUrl) {
         content
     };
 
-    const headers = { 'Content-Type': 'application/json' };
+    const extra = { 'Content-Type': 'application/json' };
 
     // If the document already exists, include its timestamp so the
     // server allows overwriting instead of returning 409 Conflict.
-    const timestamp = await getDocTimestamp(baseUrl);
+    const timestamp = await getDocTimestamp(baseUrl, auth);
     if (timestamp) {
-        headers['If-None-Match'] = timestamp;
+        extra['If-None-Match'] = timestamp;
     }
 
     const response = await fetch(url, {
         method: 'PUT',
         credentials: 'include',
-        headers,
+        headers: buildHeaders(auth, extra),
         body: JSON.stringify(body)
     });
 
@@ -153,8 +182,9 @@ export async function uploadClass(baseUrl) {
 /**
  * Compile the previously uploaded class via Atelier POST.
  * @param {string} baseUrl
+ * @param {{ username: string, password: string }} [auth]
  */
-export async function compileClass(baseUrl) {
+export async function compileClass(baseUrl, auth) {
     const url = `${baseUrl}${ATELIER_BASE}/action/compile?source=0&flags=cukb`;
 
     const body = [`${CLASS_NAME}.cls`];
@@ -162,7 +192,7 @@ export async function compileClass(baseUrl) {
     const response = await fetch(url, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: buildHeaders(auth, { 'Content-Type': 'application/json' }),
         body: JSON.stringify(body)
     });
 
@@ -189,8 +219,9 @@ export async function compileClass(baseUrl) {
 /**
  * Execute the framework setup stored procedure via Atelier Query.
  * @param {string} baseUrl
+ * @param {{ username: string, password: string }} [auth]
  */
-export async function executeSetupProcedure(baseUrl) {
+export async function executeSetupProcedure(baseUrl, auth) {
     const url = `${baseUrl}${ATELIER_BASE}/action/query`;
 
     const body = {
@@ -201,7 +232,7 @@ export async function executeSetupProcedure(baseUrl) {
     const response = await fetch(url, {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: buildHeaders(auth, { 'Content-Type': 'application/json' }),
         body: JSON.stringify(body)
     });
 

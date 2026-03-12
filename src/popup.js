@@ -9,7 +9,7 @@
 
 import { browser } from './platform/browser-polyfill.js';
 import { fetchExport } from './api.js';
-import { saveSnapshot, loadSnapshot, saveReport, clearAllData } from './storage.js';
+import { saveSnapshot, loadSnapshot, saveReport, clearAllData, saveCredentials, loadCredentials, clearCredentials } from './storage.js';
 import { compare } from './core/compare.js';
 import { ensureExportApiAvailable } from './core/bootstrap.js';
 
@@ -23,6 +23,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const consentOverlay = document.getElementById('consent-overlay');
     const consentConfirmBtn = document.getElementById('consent-confirm');
     const consentCancelBtn = document.getElementById('consent-cancel');
+
+    // Credentials dialog elements
+    const credentialsOverlay = document.getElementById('credentials-overlay');
+    const credentialsForm = document.getElementById('credentials-form');
+    const credentialsCancelBtn = document.getElementById('credentials-cancel');
+    const credUsernameInput = document.getElementById('cred-username');
+    const credPasswordInput = document.getElementById('cred-password');
 
     saveBtn.addEventListener('click', handleSave);
     compareBtn.addEventListener('click', handleCompare);
@@ -42,20 +49,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await ensureHostPermissions(baseUrl);
 
+            const auth = await getAuth(baseUrl);
+
             await ensureExportApiAvailable(
                 baseUrl,
                 (msg) => setStatus(msg, 'info'),
-                showConsentDialog
+                showConsentDialog,
+                auth
             );
 
             setStatus('Fetching server data...', 'info');
-            const snapshot = await fetchExport(baseUrl);
+            const snapshot = await fetchExport(baseUrl, auth);
 
             await saveSnapshot({ snapshot, serverUrl: baseUrl });
 
             updateSecondaryButtons();
             setStatus(`Data saved from ${baseUrl}`, 'success');
         } catch (err) {
+            if (err.authFailed) {
+                const baseUrl = await getActiveTabOrigin().catch(() => null);
+                if (baseUrl) await clearCredentials(baseUrl);
+            }
             setStatusError(err);
         } finally {
             disableButtons(false);
@@ -79,14 +93,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
             await ensureHostPermissions(baseUrl);
 
+            const auth = await getAuth(baseUrl);
+
             await ensureExportApiAvailable(
                 baseUrl,
                 (msg) => setStatus(msg, 'info'),
-                showConsentDialog
+                showConsentDialog,
+                auth
             );
 
             setStatus('Fetching current server data...', 'info');
-            const currentSnapshot = await fetchExport(baseUrl);
+            const currentSnapshot = await fetchExport(baseUrl, auth);
 
             setStatus('Comparing snapshots...', 'info');
             const report = compare(saved.snapshot, currentSnapshot);
@@ -100,6 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setStatus('Report opened in a new tab.', 'success');
         } catch (err) {
+            if (err.authFailed) {
+                const baseUrl = await getActiveTabOrigin().catch(() => null);
+                if (baseUrl) await clearCredentials(baseUrl);
+            }
             setStatusError(err);
         } finally {
             disableButtons(false);
@@ -197,6 +218,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
             consentConfirmBtn.addEventListener('click', onConfirm);
             consentCancelBtn.addEventListener('click', onCancel);
+        });
+    }
+
+    /* ---- Credentials Dialog ---- */
+
+    /**
+     * Retrieve credentials for a server. Returns stored credentials if
+     * available, otherwise prompts the user via a dialog.
+     *
+     * @param {string} baseUrl
+     * @returns {Promise<{ username: string, password: string }>}
+     */
+    async function getAuth(baseUrl) {
+        const stored = await loadCredentials(baseUrl);
+        if (stored) return stored;
+
+        const auth = await showCredentialsDialog();
+        if (!auth) {
+            throw new Error('Authentication is required to access the server.');
+        }
+
+        await saveCredentials(baseUrl, auth);
+        return auth;
+    }
+
+    /**
+     * Show the credentials dialog and return a promise that resolves to
+     * { username, password } or null if the user cancels.
+     * @returns {Promise<{ username: string, password: string } | null>}
+     */
+    function showCredentialsDialog() {
+        return new Promise((resolve) => {
+            document.body.classList.add('dialog-open');
+            credentialsOverlay.classList.remove('hidden');
+            credUsernameInput.value = '';
+            credPasswordInput.value = '';
+            credUsernameInput.focus();
+
+            function cleanup() {
+                credentialsOverlay.classList.add('hidden');
+                document.body.classList.remove('dialog-open');
+                credentialsForm.removeEventListener('submit', onSubmit);
+                credentialsCancelBtn.removeEventListener('click', onCancel);
+            }
+
+            function onSubmit(e) {
+                e.preventDefault();
+                const username = credUsernameInput.value.trim();
+                const password = credPasswordInput.value;
+                cleanup();
+                resolve({ username, password });
+            }
+
+            function onCancel() {
+                cleanup();
+                resolve(null);
+            }
+
+            credentialsForm.addEventListener('submit', onSubmit);
+            credentialsCancelBtn.addEventListener('click', onCancel);
         });
     }
 });

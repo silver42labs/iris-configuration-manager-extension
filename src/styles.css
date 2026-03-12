@@ -1,5 +1,5 @@
 /* ================================================================== */
-/*  IRIS Migration Checklist — Shared Styles                           */
+/*  IRIS Configuration Manager — Shared Styles                           */
 /* ================================================================== */
 
 /* ---- Reset & base ---- */
@@ -210,6 +210,36 @@ button:disabled {
     flex: 1;
     padding: 7px 10px;
     font-size: 12px;
+}
+
+/* ---- Dialog input fields (credentials form) ---- */
+
+.input-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 2px;
+    margin-top: 8px;
+}
+
+.input-field {
+    display: block;
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: #1a1a1a;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.input-field:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
 /* ---- Popup footer ---- */

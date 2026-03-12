@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ================================================================== #
-#  Build script for IRIS Migration Checklist                          #
+#  Build script for IRIS Configuration Manager                          #
 #                                                                     #
 #  Usage:                                                             #
 #    ./scripts/build.sh chrome    — build Chrome package               #
@@ -72,7 +72,7 @@ build_target() {
 target="${1:-all}"
 
 echo "============================================"
-echo "  IRIS Migration Checklist — Build"
+echo "  IRIS Configuration Manager — Build"
 echo "============================================"
 
 case "$target" in
