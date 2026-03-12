@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=320">
     <link rel="stylesheet" href="styles.css">
-    <title>IRIS Migration Checklist</title>
+    <title>IRIS Configuration Manager</title>
 </head>
 
 <body class="popup">
-    <h1>IRIS Migration Checklist</h1>
+    <h1>IRIS Configuration Manager</h1>
 
     <div class="actions">
         <button id="save-btn" type="button">Save Server Data</button>
@@ -29,15 +29,34 @@
             <p>The export API was not found. To proceed, the extension will:</p>
             <ul>
                 <li>Upload and compile <a
-                        href="https://github.com/silveira42/iris-migration-checklist-extension/blob/main/Migration.Framework.cls"
+                        href="https://github.com/silveira42/iris-configuration-manager-extension/blob/main/Migration.Framework.cls"
                         target="_blank" rel="noopener"><strong>Migration.Framework.cls</strong></a> in %SYS</li>
-                <li>Register a web application at <code>/api/v1/migration/framework</code></li>
+                <li>Register a web application at <code>/api/v1/configuration-manager</code></li>
             </ul>
             <p>Requires Atelier API access and appropriate server permissions.</p>
             <div class="dialog-actions">
                 <button id="consent-cancel" type="button" class="btn-secondary">Cancel</button>
                 <button id="consent-confirm" type="button">Install and Continue</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Credentials dialog -->
+    <div id="credentials-overlay" class="overlay hidden" role="dialog" aria-modal="true"
+        aria-labelledby="credentials-title">
+        <div class="dialog">
+            <h2 id="credentials-title">Server Authentication</h2>
+            <p>Enter your IRIS server credentials (Basic Auth).</p>
+            <form id="credentials-form" autocomplete="off">
+                <label class="input-label" for="cred-username">Username</label>
+                <input id="cred-username" type="text" class="input-field" required autocomplete="username">
+                <label class="input-label" for="cred-password">Password</label>
+                <input id="cred-password" type="password" class="input-field" required autocomplete="current-password">
+                <div class="dialog-actions">
+                    <button id="credentials-cancel" type="button" class="btn-secondary">Cancel</button>
+                    <button id="credentials-submit" type="submit">Authenticate</button>
+                </div>
+            </form>
         </div>
     </div>
 

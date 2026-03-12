@@ -1,9 +1,9 @@
-# IRIS Migration Checklist
+# IRIS Configuration Manager
 
-Deploy a migration export API to any InterSystems IRIS/Cache server that exposes `/api/atelier`, capture its configuration snapshot, and compare it against another server in minutes. This extension turns a manual, error-prone migration checklist into a repeatable diff report you can trust.
+Deploy a configuration manager API to any InterSystems IRIS/Cache server that exposes `/api/atelier`, capture its configuration snapshot, and compare it against another server in minutes. This extension turns a manual, error-prone migration checklist into a repeatable diff report you can trust.
 
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/silver42labs/iris-migration-checklist-extension/blob/main/README.md)
-[![pt-br](https://img.shields.io/badge/lang-pt--br-green.svg)](https://github.com/silver42labs/iris-migration-checklist-extension/blob/main/LEIAME.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/silver42labs/iris-configuration-manager-extension/blob/main/README.md)
+[![pt-br](https://img.shields.io/badge/lang-pt--br-green.svg)](https://github.com/silver42labs/iris-configuration-manager-extension/blob/main/LEIAME.md)
 
 ## Supported Browsers
 

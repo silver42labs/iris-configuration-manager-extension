@@ -1,4 +1,4 @@
-# IRIS Migration Checklist — Architecture
+# IRIS Configuration Manager — Architecture
 
 ## Overview
 
@@ -9,7 +9,7 @@ This project is a unified WebExtension that runs on both **Chrome** and **Firefo
 ## Directory Structure
 
 ```txt
-iris-migration-checklist/
+iris-configuration-manager/
 ├── src/                            # All source code
 │   ├── platform/
 │   │   └── browser-polyfill.js     # Browser API compatibility layer
@@ -54,25 +54,25 @@ iris-migration-checklist/
 
 ### Shared (100% of business logic)
 
-| Module | Purpose |
-| -------- | --------- |
-| `core/compare.js` | Snapshot comparison engine |
-| `core/registry.js` | Entity type configuration (declarative) |
-| `core/bootstrap.js` | Backend installation orchestration |
-| `core/strategies/*` | Comparison strategies (entity & flat) |
-| `api.js` | Server communication (fetch, Atelier API) |
-| `storage.js` | Snapshot/report persistence |
-| `popup.js` | Popup UI controller |
-| `report.js` | Report page renderer |
-| All HTML/CSS | UI markup and styles |
-| `Migration.Framework.cls` | Backend ObjectScript class |
+| Module                    | Purpose                                   |
+| ------------------------- | ----------------------------------------- |
+| `core/compare.js`         | Snapshot comparison engine                |
+| `core/registry.js`        | Entity type configuration (declarative)   |
+| `core/bootstrap.js`       | Backend installation orchestration        |
+| `core/strategies/*`       | Comparison strategies (entity & flat)     |
+| `api.js`                  | Server communication (fetch, Atelier API) |
+| `storage.js`              | Snapshot/report persistence               |
+| `popup.js`                | Popup UI controller                       |
+| `report.js`               | Report page renderer                      |
+| All HTML/CSS              | UI markup and styles                      |
+| `Migration.Framework.cls` | Backend ObjectScript class                |
 
 ### Browser-Specific
 
-| Item | Chrome | Firefox |
-| ------ | -------- | --------- |
-| **Manifest** | No `optional_host_permissions`, no `content_security_policy`, no `browser_specific_settings` | Includes `optional_host_permissions`, `content_security_policy`, and `gecko` settings |
-| **Runtime permissions** | Host permissions auto-granted at install; `ensureHostPermissions()` is a no-op | Host permissions require runtime approval; `ensureHostPermissions()` prompts the user |
+| Item                    | Chrome                                                                                       | Firefox                                                                               |
+| ----------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Manifest**            | No `optional_host_permissions`, no `content_security_policy`, no `browser_specific_settings` | Includes `optional_host_permissions`, `content_security_policy`, and `gecko` settings |
+| **Runtime permissions** | Host permissions auto-granted at install; `ensureHostPermissions()` is a no-op               | Host permissions require runtime approval; `ensureHostPermissions()` prompts the user |
 
 ---
 
@@ -146,10 +146,10 @@ Build artifacts are placed in:
 
 ```bash
 # Chrome
-cd dist/chrome && zip -r ../../iris-migration-checklist-chrome.zip .
+cd dist/chrome && zip -r ../../iris-configuration-manager-chrome.zip .
 
 # Firefox
-cd dist/firefox && zip -r ../../iris-migration-checklist-firefox.zip .
+cd dist/firefox && zip -r ../../iris-configuration-manager-firefox.zip .
 ```
 
 ---

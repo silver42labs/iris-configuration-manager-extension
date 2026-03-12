@@ -1,15 +1,15 @@
 {
     "manifest_version": 3,
-    "name": "IRIS Migration Checklist",
-    "version": "1.1.1",
-    "description": "Compare migration framework exports between IRIS/Cache servers.",
+    "name": "IRIS Configuration Manager",
+    "version": "1.1.2",
+    "description": "Manages the settings between IRIS/Cache servers.",
     "permissions": [
         "storage",
         "activeTab"
     ],
     "host_permissions": [
-        "https://*/api/v1/migration/*",
-        "http://*/api/v1/migration/*",
+        "https://*/api/v1/configuration-manager/*",
+        "http://*/api/v1/configuration-manager/*",
         "https://*/api/atelier/*",
         "http://*/api/atelier/*"
     ],
@@ -36,7 +36,7 @@
     },
     "browser_specific_settings": {
         "gecko": {
-            "id": "iris-migration-checklist@silver42labs.github.io",
+            "id": "iris-migration-checklist@silveira42.github.io",
             "strict_min_version": "140.0",
             "data_collection_permissions": {
                 "required": [

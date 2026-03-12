@@ -35,7 +35,7 @@ ClassMethod GetMethodName(pBaseName As %Library.String) As %Library.String
 ClassMethod Setup() As %Library.Status [ SqlProc ]
 {
     ZNspace "%SYS"
-    Set name = "/api/v1/migration/framework"
+    Set name = "/api/v1/configuration-manager"
     Set currentVersion = $ZVERSION
 
     If (##class(Security.Applications).Exists(name))
@@ -45,11 +45,10 @@ ClassMethod Setup() As %Library.Status [ SqlProc ]
 
     Set props("NameSpace") = "%SYS"
     Set props("DispatchClass") = $CLASSNAME()
-    Set props("Description") = "Part of the Migration Framework. Uploaded at " _ ##Class(%Library.UTC).NowLocal()
-    Set props("MatchRoles") = ":%All"
+    Set props("Description") = "Part of the IRIS Configuration Manager Extension. Uploaded at " _ ##Class(%Library.UTC).NowLocal()
     Set props("AutheEnabled") = 32
 
-    If (currentVersion [ "2027")
+    If (currentVersion [ "2017")
     {
         Set props("CSPZENEnabled") = 1
     }

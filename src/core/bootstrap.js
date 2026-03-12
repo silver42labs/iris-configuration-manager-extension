@@ -26,16 +26,17 @@ import {
  * @param {(msg: string) => void} [onStatus] - Optional progress callback.
  * @param {() => Promise<boolean>} [onRequestConsent] - Optional consent callback.
  *        Must return true to proceed with installation, false to cancel.
+ * @param {{ username: string, password: string }} [auth] - Optional Basic Auth credentials.
  * @returns {Promise<void>} Resolves when endpoint is confirmed available.
  * @throws {Error} If installation or retry fails.
  */
-export async function ensureExportApiAvailable(baseUrl, onStatus, onRequestConsent) {
+export async function ensureExportApiAvailable(baseUrl, onStatus, onRequestConsent, auth) {
     const status = onStatus || (() => { });
     const requestConsent = onRequestConsent || (() => Promise.resolve(true));
 
     // --- Probe the export endpoint ---
-    status('Checking export API availability…');
-    const probeResult = await tryFetchExport(baseUrl);
+    status('Checking export API availability...');
+    const probeResult = await tryFetchExport(baseUrl, auth);
 
     if (probeResult.ok) {
         return; // Endpoint exists — nothing to install.
@@ -47,12 +48,12 @@ export async function ensureExportApiAvailable(baseUrl, onStatus, onRequestConse
         throw new Error('Installation cancelled. The export API is required to proceed.');
     }
 
-    status('Installing backend framework…');
-    await installFramework(baseUrl, status);
+    status('Installing backend framework...');
+    await installFramework(baseUrl, status, auth);
 
     // --- Retry probe after installation ---
-    status('Verifying export API after installation…');
-    const retryResult = await tryFetchExport(baseUrl);
+    status('Verifying export API after installation...');
+    const retryResult = await tryFetchExport(baseUrl, auth);
 
     if (!retryResult.ok) {
         const webAppUrl =
@@ -73,7 +74,7 @@ export async function ensureExportApiAvailable(baseUrl, onStatus, onRequestConse
 /* ------------------------------------------------------------------ */
 
 /**
- * Install the migration framework on the target server.
+ * Install the configuration manager on the target server.
  * Steps:
  *   1. Upload the backend class source via Atelier
  *   2. Compile the uploaded class
@@ -81,16 +82,17 @@ export async function ensureExportApiAvailable(baseUrl, onStatus, onRequestConse
  *
  * @param {string} baseUrl
  * @param {(msg: string) => void} status
+ * @param {{ username: string, password: string }} [auth]
  */
-async function installFramework(baseUrl, status) {
-    status('Step 1/3 — Uploading backend class…');
-    await uploadClass(baseUrl);
+async function installFramework(baseUrl, status, auth) {
+    status('Step 1/3 — Uploading backend class...');
+    await uploadClass(baseUrl, auth);
 
-    status('Step 2/3 — Compiling backend class…');
-    await compileClass(baseUrl);
+    status('Step 2/3 — Compiling backend class...');
+    await compileClass(baseUrl, auth);
 
-    status('Step 3/3 — Executing setup procedure…');
-    await executeSetupProcedure(baseUrl);
+    status('Step 3/3 — Executing setup procedure...');
+    await executeSetupProcedure(baseUrl, auth);
 
     status('Backend framework installation complete.');
 }
