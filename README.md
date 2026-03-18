@@ -7,7 +7,7 @@ Deploy a configuration manager API to any InterSystems IRIS/Cache server that ex
 
 ## Supported Browsers
 
-- Google Chrome (Manifest V3) [Chrome Web Store](https://chromewebstore.google.com/detail/iris-migration-checklist/anamganabilobholichagldbejkpclag)
+- Google Chrome (Manifest V3) [Chrome Web Store](https://chromewebstore.google.com/detail/iris-configuration-manage/anamganabilobholichagldbejkpclag)
 - Mozilla Firefox (Manifest V3) [Firefox Add-ons (AMO)](https://addons.mozilla.org/en-US/firefox/addon/iris-migration-checklist/).
 
 ## How to run this extension locally
